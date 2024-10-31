@@ -22,13 +22,13 @@ export class MovieEntity {
   isAdult: string;
 
   @Column()
-  startYear: string;
+  startYear: number;
 
   @Column()
-  endYear: string;
+  endYear: number;
 
   @Column()
-  runtimeMinutes: string;
+  runtimeMinutes: number;
 
   @Column('simple-array')
   genres: string[];

@@ -65,8 +65,7 @@ export class ProfessionService {
       if (artists.length === 0) break;
 
       for (let i = 0; i < artists.length; i++) {
-        const professionName = artists[i].professions.map ; // Assuming genres array has 'name' field
-        console.log(professionName);
+        const professionName = artists[i].primaryProfession.split(','); // Assuming genres array has 'name' field
 
         const profession = await this.professionRepository
           .createQueryBuilder('profession')
@@ -76,10 +75,13 @@ export class ProfessionService {
 
         artists[i].professions = profession;
 
+
         await this.artistRepository.save(artists[i]);
       }
       offset += batchSize;
       butchNumber ++
+
+      console.log( butchNumber ,batchSize)
     }
   }
 }

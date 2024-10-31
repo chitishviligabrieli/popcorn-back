@@ -11,24 +11,4 @@ export class MovieTypeController {
   create(@Body() createMovieTypeDto: CreateMovieTypeDto) {
     return this.movieTypeService.create(createMovieTypeDto);
   }
-
-  @Get()
-  findAll() {
-    return this.movieTypeService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.movieTypeService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMovieTypeDto: UpdateMovieTypeDto) {
-    return this.movieTypeService.update(+id, updateMovieTypeDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.movieTypeService.remove(+id);
-  }
 }

@@ -5,15 +5,16 @@ import { UpdateProfessionDto } from './dto/update-profession.dto';
 
 @Controller('profession')
 export class ProfessionController {
-  constructor(private readonly professionService: ProfessionService) {}
+  constructor(private readonly professionService: ProfessionService) {
+  }
 
   @Post()
-  async createProfession(): Promise<void>{
+  async createProfession(): Promise<void> {
     await this.professionService.createProfessinos();
   }
 
   @Post('map')
-  async professionMap(){
-  await this.professionService.professionMap()
+  async professionMap(): Promise<any> {
+    await this.professionService.professionMap();
   }
 }

@@ -7,20 +7,4 @@ export class MovieTypeService {
   create(createMovieTypeDto: CreateMovieTypeDto) {
     return 'This action adds a new movieType';
   }
-
-  findAll() {
-    return `This action returns all movieType`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} movieType`;
-  }
-
-  update(id: number, updateMovieTypeDto: UpdateMovieTypeDto) {
-    return `This action updates a #${id} movieType`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} movieType`;
-  }
 }
