@@ -10,7 +10,7 @@ import { MoviesEntity } from "./entities/movie.entity";
     TypeOrmModule.forFeature([MoviesEntity, MoviesRepository])
   ],
   controllers: [MoviesController],
-  providers: [MoviesService,MoviesEntity, MoviesRepository],
-  exports: [MoviesModule, ]
+  providers: [MoviesService, MoviesRepository],
+  exports: [MoviesService, MoviesRepository]
 })
 export class MoviesModule {}

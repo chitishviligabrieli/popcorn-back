@@ -32,7 +32,7 @@ export class MoviesEntity {
   @Column()
   genre: string;
 
-  @Column()
+  @Column({type: 'longtext'})
   jsonData: string;
 
   @Column( {nullable: true, default: 0 } )

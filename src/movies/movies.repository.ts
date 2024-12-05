@@ -5,8 +5,9 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class MoviesRepository {
-  constructor(@InjectRepository(MoviesEntity)
-              private readonly movieRepository: Repository<MoviesEntity>) {
+  constructor(
+    @InjectRepository(MoviesEntity)
+    private readonly movieRepository: Repository<MoviesEntity>) {
   }
 
   async findAll(): Promise<MoviesEntity[]> {
@@ -18,7 +19,7 @@ export class MoviesRepository {
       .getMany();
   }
 
-  async findBatch(offset: number, limit: number): Promise<MoviesEntity[]> {
+  async findBatch(offset: number, limit: number):Promise<MoviesEntity[]> {
     return this.movieRepository
       .createQueryBuilder('movies')
       .skip(offset)
@@ -29,6 +30,4 @@ export class MoviesRepository {
   async save (movie: MoviesEntity): Promise<MoviesEntity> {
     return this.movieRepository.save(movie);
   }
-
-
 }

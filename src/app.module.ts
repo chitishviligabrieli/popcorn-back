@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MoviesModule } from './movies/movies.module';
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { JustWatchModule } from "./justwatch/justwatch.module";
 import { MoviesEntity } from "./movies/entities/movie.entity";
 
 @Module({
@@ -20,7 +19,6 @@ import { MoviesEntity } from "./movies/entities/movie.entity";
       type: 'mysql',
     }),
     MoviesModule,
-    JustWatchModule
   ],
   controllers: [AppController],
   providers: [AppService],
