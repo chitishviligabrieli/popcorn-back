@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class MoviesEntity {
@@ -35,6 +35,10 @@ export class MoviesEntity {
   @Column({type: 'longtext'})
   jsonData: string;
 
+  @Index()
   @Column( {nullable: true, default: 0 } )
   parsed: boolean
+
+  @Column({nullable: true, default: 0})
+  notData: boolean;
 }

@@ -2,31 +2,35 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { MoviesEntity } from "./entities/movie.entity";
 import { MoviesRepository } from "./movies.repository";
+import { HttpsProxyAgent } from "https-proxy-agent";
 
 @Injectable()
 export class MoviesService {
   constructor(
     private readonly moviesRepository: MoviesRepository,
-
   ) {
   }
+
   private readonly logger = new Logger(MoviesService.name);
   private url = 'https://apis.justwatch.com/graphql';
-  private interval = 5000;
+  private interval = 100;
+  private deviceId = ['CwQaL8OCP03CqcKUCsKaXM', 'w47DkXjDrsO7w6ZLCsKbNB', 'WHrDlcOQwoDDhkdLCqpvfM', 'CTXDnBjCisKcSsK8Co9Tc8', 'w7cIwrYLwqBwRwfCCEPDoy', 'w73DsBxOL0lCwpzCCsK7w7']
+  private deviceIdx = 0
+  private Number = 0
+  private proxyUrl = 'http://mikheilpai8:Xf4bJUCMie9o9oYxVWs8@core-residential.evomi.com:1000';
+  private agent = new HttpsProxyAgent(this.proxyUrl);
   private headers = {
-    'Content-Type': 'application/json',
-    'device-id': 'AAoAAAAAAAALAA8ACwAAAA',
+    'device-id': this.deviceId[this.deviceIdx],
   };
-  private offset = 0;
+  private offset = 100000;
   private limit = 40;
   private number = 1;
-  private type = 'movie';
-  private movieName = '';
+  private requestCounter = 0
 
 
-  async getEachMovie(): Promise<MoviesEntity[]> {
-    const movies = await this.moviesRepository.findBatch(this.offset, this.limit);
-    return  movies;
+  async getEachMovie(offset: number): Promise<MoviesEntity[]> {
+    const movies = await this.moviesRepository.findBatch(offset, this.limit);
+    return movies;
   }
 
   getPayload(type: string, movie: string) {
@@ -71,9 +75,9 @@ export class MoviesService {
     };
   }
 
-
-  async getMovies() {
-    const movies = await this.getEachMovie();
+  async getMovies( offset: number) {
+    if(this.requestCounter < 33803473){
+    const movies = await this.getEachMovie(offset);
 
 
     movies.forEach((movie) => {
@@ -83,85 +87,80 @@ export class MoviesService {
         .replace(/[':]/g, '');
     });
 
-    for (const movie of movies) {
+    for (let i = 0; i < 40; i++) {
+      if(!(movies[i].parsed) || !(movies[i].notData)) {
       let attempt = 0;
-      const maxAttempts = 11;
+      const maxAttempts = 3;
       let success = false;
 
-      while (attempt < maxAttempts) {
-        try {
-          let type = 'movie';
-          let modifiedMovieTitle = movie.primaryTitle;
 
-          switch (attempt) {
-            case 0:
-              modifiedMovieTitle = movie.primaryTitle;
-              break;
-            case 1:
-              modifiedMovieTitle = `${movie.primaryTitle}-${movie.startYear}`;
-              break;
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-            case 8:
-            case 9:
-              modifiedMovieTitle = `${movie.primaryTitle}-${attempt - 1}`;
-              break;
-            case 10:
-              type = 'tv-show';
-              modifiedMovieTitle = `${movie.primaryTitle}`;
-              break;
-            default:
-              break;
+
+        while (attempt < maxAttempts) {
+          this.requestCounter++;
+          try {
+            let type = 'movie';
+            let modifiedMovieTitle = movies[i].primaryTitle;
+
+            switch (attempt) {
+              case 0:
+                modifiedMovieTitle = movies[i].primaryTitle;
+                break;
+              case 1:
+                modifiedMovieTitle = `${movies[i].primaryTitle}-${movies[i].startYear}`;
+                break;
+              case 2:
+                type = 'tv-show';
+                modifiedMovieTitle = `${movies[i].primaryTitle}`;
+                break;
+            }
+
+
+            const payload = this.getPayload(type, modifiedMovieTitle);
+            const r = await axios.post(this.url, payload, { headers: this.headers, httpsAgent: this.agent });
+            console.log(r.data);
+
+            if (!r.data.errors) {
+              movies[i].jsonData = JSON.stringify(r.data);
+              movies[i].parsed = true;
+              await this.moviesRepository.save(movies[i]);
+              success = true;
+              console.log(`Success for ${movies[i].primaryTitle}`, movies[i].id, this.requestCounter);
+            }
+            console.log(`movieid:${movies[i].id}, counter: ${this.requestCounter} ${this.number}`)
+            if ((movies[i].id % 40 === 0) && (this.requestCounter % 10 === 0)) {
+              this.number++
+            }
+            attempt++;
+          } catch (error) {
+            console.error(`Request failed on attempt ${attempt + 1} for ${movies[i].primaryTitle}:`, this.number, this.offset, this.limit, '121212', error.message, '12121212');
+            this.requestCounter--;
           }
 
-          const payload = this.getPayload(type, modifiedMovieTitle);
-          const r = await axios.post(this.url, payload, {headers: this.headers});
-          console.log(r.data);
-
-          if (!r.data.errors) {
-            movie.jsonData = JSON.stringify(r.data);
-            movie.parsed = true;
-            await this.moviesRepository.save(movie);
-            success = true;
-            console.log(`Success for ${movie.primaryTitle}:`, r.data);
-            break;
+          if (!success) {
+              movies[i].notData = true
           }
-        } catch (error) {
-          console.error(`Request failed on attempt ${attempt + 1} for ${movie.primaryTitle}:`, error.message, this.number, this.offset, this.limit);
         }
-
-        attempt++;
       }
-
-
-      if (!success) {
-        console.error(`Failed to process ${movie.primaryTitle} after ${maxAttempts} attempts`);
-      }
+      console.log(`Total requests simulated: ${this.requestCounter}`);
     }
-    console.log('number: ', this.number, 'limit: ', this.limit, 'offset: ', this.offset);
+    }
   }
-
-
-  startLoop() {
-    this.getMovies()
+  async startLoop() {
     setInterval(() => {
-      this.number++;
-      this.limit = this.number * 40;
-      this.offset = this.limit - 40;
+      this.offset += 40;
+      this.getMovies(this.offset);
 
-      this.getMovies(); // Fetch in each interval
-    }, this.interval);
-
+    }, 2000)
   }
 
-
-
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
   onModuleInit() {
     this.startLoop();
     console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk');
   }
 }
+
+
+
